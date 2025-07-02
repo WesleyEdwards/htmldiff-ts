@@ -9241,12 +9241,14 @@ var specialCaseClosingTags = new Map([['</strong>', 0], ['</em>', 0], ['</b>', 0
 var specialCaseOpeningTagRegex = /<((strong)|(b)|(i)|(dfn)|(em)|(big)|(small)|(u)|(sub)|(sup)|(strike)|(s))[\>\s]+/ig;
 
 var HtmlDiff = function () {
-    function HtmlDiff(oldText, newText) {
+    function HtmlDiff(oldText, newText, splitBy) {
         _classCallCheck(this, HtmlDiff);
 
         this.content = [];
         this.newText = newText;
         this.oldText = oldText;
+
+        this.splitBy = splitBy;
 
         this.specialTagDiffStack = [];
         this.newWords = [];
@@ -9306,15 +9308,27 @@ var HtmlDiff = function () {
     }, {
         key: 'splitInputsIntoWords',
         value: function splitInputsIntoWords() {
-            this.oldWords = WordSplitter.convertHtmlToListOfWords(this.oldText, this.blockExpressions);
+            if (this.splitBy === "element") {
+                this.oldWords = WordSplitter.splitHtmlIntoSmallestSegments(this.oldText);
 
-            //free memory, allow it for GC
-            this.oldText = null;
+                //free memory, allow it for GC
+                this.oldText = null;
 
-            this.newWords = WordSplitter.convertHtmlToListOfWords(this.newText, this.blockExpressions);
+                this.newWords = WordSplitter.splitHtmlIntoSmallestSegments(this.newText);
 
-            //free memory, allow it for GC
-            this.newText = null;
+                //free memory, allow it for GC
+                this.newText = null;
+            } else {
+                this.oldWords = WordSplitter.convertHtmlToListOfWords(this.oldText, this.blockExpressions);
+
+                //free memory, allow it for GC
+                this.oldText = null;
+
+                this.newWords = WordSplitter.convertHtmlToListOfWords(this.newText, this.blockExpressions);
+
+                //free memory, allow it for GC
+                this.newText = null;
+            }
         }
     }, {
         key: 'performOperation',
@@ -9382,7 +9396,9 @@ var HtmlDiff = function () {
                     this.content.push(text);
                 } else {
                     if (specialCaseOpeningTagRegex.test(words[0])) {
-                        this.specialTagDiffStack.push(words[0]);
+                        var matchedTag = words[0].match(specialCaseOpeningTagRegex);
+                        matchedTag = '<' + matchedTag[0].replace(/(<|>| )/g, '') + '>';
+                        this.specialTagDiffStack.push(matchedTag);
                         specialCaseTagInjection = '<ins class="mod">';
                         if (tag === 'del') {
                             words.shift();
@@ -9687,7 +9703,9 @@ var HtmlDiff = function () {
 }();
 
 HtmlDiff.execute = function (oldText, newText) {
-    return new HtmlDiff(oldText, newText).build();
+    var splitBy = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "word";
+
+    return new HtmlDiff(oldText, newText, splitBy).build();
 };
 
 exports.default = HtmlDiff;
@@ -9957,7 +9975,7 @@ exports.default = Operation;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.convertHtmlToListOfWords = undefined;
+exports.splitHtmlIntoSmallestSegments = exports.convertHtmlToListOfWords = undefined;
 
 var _Mode = __webpack_require__(336);
 
@@ -10147,7 +10165,41 @@ function findBlocks(text, blockExpressions) {
     return blockLocations;
 }
 
+// string -> string[]
+function splitHtmlIntoSmallestSegments(html) {
+    var result = []; // string[]
+    var buffer = '';
+    var inTag = false;
+
+    for (var i = 0; i < html.length; i++) {
+        var char = html[i];
+
+        if (char === '<') {
+            if (buffer) {
+                result.push(buffer);
+                buffer = '';
+            }
+            inTag = true;
+            buffer += char;
+        } else if (char === '>' && inTag) {
+            buffer += char;
+            result.push(buffer);
+            buffer = '';
+            inTag = false;
+        } else {
+            buffer += char;
+        }
+    }
+
+    if (buffer) {
+        result.push(buffer);
+    }
+
+    return result;
+}
+
 exports.convertHtmlToListOfWords = convertHtmlToListOfWords;
+exports.splitHtmlIntoSmallestSegments = splitHtmlIntoSmallestSegments;
 
 /***/ }),
 /* 336 */

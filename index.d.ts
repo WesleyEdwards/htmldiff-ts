@@ -6,7 +6,7 @@ declare const HtmlDiff: {
    * @param splitBy Display differences per 'word' or per HTML 'element'
    * @returns HTML with <ins> and <del> tags consistent with differences between 'oldHtml' and 'newHtml'
    */
-  execute: (oldHtml: string, newHtml: string, splitBy: "word" | "element") => string
+  execute: (oldHtml: string, newHtml: string, splitBy?: "word" | "element" = "word") => string
 }
 
 export default HtmlDiff
