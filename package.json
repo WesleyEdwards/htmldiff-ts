@@ -1,0 +1,38 @@
+{
+  "name": "@wesley-edwards/htmldiff-ts",
+  "version": "1.0.0",
+  "description": "Revamped version of htmldiff-js. Display diff between two html strings.",
+  "main": "./dist/htmldiff.min.js",
+  "types": "index.d.ts",
+  "author": "Wesley Edwards",
+  "license": "ISC",
+  "scripts": {
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WesleyEdwards/htmldiff-ts.git"
+  },
+  "keywords": [
+    "HtmlDiff",
+    "Html",
+    "Diff",
+    "Diff Algorithm",
+    "Diff Structured File"
+  ],
+  "bugs": {
+    "url": "https://github.com/WesleyEdwards/htmldiff-ts/issues"
+  },
+  "homepage": "https://github.com/WesleyEdwards/htmldiff-ts#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "clean-webpack-plugin": "^0.1.17",
+    "unminified-webpack-plugin": "^2.0.0",
+    "webpack": "^4.40.2",
+    "webpack-cli": "^3.3.9"
+  }
+}
