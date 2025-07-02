@@ -26,10 +26,12 @@ const specialCaseClosingTags = new Map([
 const specialCaseOpeningTagRegex = /<((strong)|(b)|(i)|(dfn)|(em)|(big)|(small)|(u)|(sub)|(sup)|(strike)|(s))[\>\s]+/ig;
 
 class HtmlDiff {
-    constructor(oldText, newText) {
+    constructor(oldText, newText, splitBy) {
         this.content = [];
         this.newText = newText;
         this.oldText = oldText;
+
+        this.splitBy = splitBy;
 
         this.specialTagDiffStack = [];
         this.newWords = [];
@@ -64,15 +66,27 @@ class HtmlDiff {
     }
 
     splitInputsIntoWords() {
-        this.oldWords = WordSplitter.convertHtmlToListOfWords(this.oldText, this.blockExpressions);
+        if (this.splitBy === "element") {
+            this.oldWords = WordSplitter.splitHtmlIntoSmallestSegments(this.oldText);
 
-        //free memory, allow it for GC
-        this.oldText = null;
+            //free memory, allow it for GC
+            this.oldText = null;
 
-        this.newWords = WordSplitter.convertHtmlToListOfWords(this.newText, this.blockExpressions);
+            this.newWords = WordSplitter.splitHtmlIntoSmallestSegments(this.newText);
 
-        //free memory, allow it for GC
-        this.newText = null;
+            //free memory, allow it for GC
+            this.newText = null;
+        } else {
+            this.oldWords = WordSplitter.convertHtmlToListOfWords(this.oldText, this.blockExpressions);
+
+            //free memory, allow it for GC
+            this.oldText = null;
+
+            this.newWords = WordSplitter.convertHtmlToListOfWords(this.newText, this.blockExpressions);
+
+            //free memory, allow it for GC
+            this.newText = null;
+        }
     }
 
     performOperation(opp) {
@@ -314,8 +328,8 @@ class HtmlDiff {
     }
 }
 
-HtmlDiff.execute = function (oldText, newText) {
-    return new HtmlDiff(oldText, newText).build();
+HtmlDiff.execute = function (oldText, newText, splitBy = "word") {
+    return new HtmlDiff(oldText, newText, splitBy).build();
 };
 
 export default HtmlDiff;

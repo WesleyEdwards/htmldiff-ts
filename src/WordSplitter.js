@@ -159,4 +159,39 @@ function findBlocks(text, blockExpressions) {
     return blockLocations;
 }
 
-export { convertHtmlToListOfWords };
+
+// string -> string[]
+function splitHtmlIntoSmallestSegments(html) {
+  const result = []; // string[]
+  let buffer = '';
+  let inTag = false;
+
+  for (let i = 0; i < html.length; i++) {
+    const char = html[i];
+
+    if (char === '<') {
+      if (buffer) {
+        result.push(buffer);
+        buffer = '';
+      }
+      inTag = true;
+      buffer += char;
+    } else if (char === '>' && inTag) {
+      buffer += char;
+      result.push(buffer);
+      buffer = '';
+      inTag = false;
+    } else {
+      buffer += char;
+    }
+  }
+
+  if (buffer) {
+    result.push(buffer);
+  }
+
+  return result;
+}
+
+
+export { convertHtmlToListOfWords, splitHtmlIntoSmallestSegments };
